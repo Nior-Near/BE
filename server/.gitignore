@@ -40,3 +40,4 @@ out/
 .DS_Store
 .DS_Store
 application-h2.properties
+application-s3.properties

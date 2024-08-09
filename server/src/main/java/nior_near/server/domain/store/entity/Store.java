@@ -1,6 +1,9 @@
 package nior_near.server.domain.store.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import nior_near.server.domain.order.entity.Order;
 import nior_near.server.domain.order.entity.Place;
 import nior_near.server.domain.user.entity.Member;
@@ -12,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@NoArgsConstructor
+@Getter
 public class Store extends Time {
 
     @Id
@@ -40,6 +45,9 @@ public class Store extends Time {
     @Column(nullable = false)
     private String message;
 
+    @Column(nullable = false)
+    private String letter;
+
     private Long lowestPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -64,4 +72,17 @@ public class Store extends Time {
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orderList = new ArrayList<>(); // 요리사 입장에서 주문 리스트를 조회할 수 있으므로
+
+    @Builder
+    public Store(String name, String profileImage, String title, String introduction, BigDecimal temperature, String message, Place place, Member member, String letter) {
+        this.name = name;
+        this.profileImage = profileImage;
+        this.title = title;
+        this.introduction = introduction;
+        this.temperature = temperature;
+        this.message = message;
+        this.place = place;
+        this.member = member;
+        this.letter = letter;
+    }
 }

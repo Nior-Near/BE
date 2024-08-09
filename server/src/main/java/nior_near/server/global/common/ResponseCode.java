@@ -49,14 +49,17 @@ public enum ResponseCode {
     NOT_HEART_EXCEPTION(HttpStatus.BAD_REQUEST, "STORE4005", "해당 상점은 관심 상점으로 등록되지 않았으므로 삭제할 수 없습니다."),
     PAGE_AND_SIZE_NOT_CORRECT(HttpStatus.BAD_REQUEST, "STORE4006", "page 와 size 는 0 과 양수만 입력 가능합니다."),
 
+    // Auth Error
+    AUTH_NOT_FOUND(HttpStatus.BAD_REQUEST, "AUTH4001", "존재하지 않는 인증입니다."),
+
     // Menu Error
     MENU_NOT_FOUND(HttpStatus.BAD_REQUEST, "MENU4001", "카테고리에 없는 메뉴입니다."),
 
-    // School Error
-    SCHOOL_NOT_FOUND(HttpStatus.BAD_REQUEST, "SCHOOL4001", "카테고리에 없는 학교입니다."),
+    // Region Error
+    REGION_NOT_FOUND(HttpStatus.BAD_REQUEST, "REGION4001", "카테고리에 없는 지역입니다."),
 
-    // Article Error
-    ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTICLE4001", "게시글이 없습니다."),
+    // Place Error
+    PLACE_NOT_FOUND(HttpStatus.NOT_FOUND, "PLACE4001", "게시글이 없습니다."),
 
     // Review Error
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW4001", "리뷰가 없습니다.");

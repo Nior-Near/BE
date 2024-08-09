@@ -1,6 +1,7 @@
 package nior_near.server.domain.user.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import nior_near.server.domain.letter.entity.Letter;
 import nior_near.server.domain.store.entity.Region;
 import nior_near.server.domain.store.entity.Store;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
 public class Member extends Time {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
