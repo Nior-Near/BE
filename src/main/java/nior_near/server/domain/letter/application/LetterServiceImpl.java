@@ -12,6 +12,7 @@ import nior_near.server.domain.user.entity.Member;
 import nior_near.server.domain.user.exception.handler.MemberExceptionHandler;
 import nior_near.server.domain.user.repository.MemberRepository;
 import nior_near.server.global.common.ResponseCode;
+import nior_near.server.global.util.SmsService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class LetterServiceImpl implements LetterService {
 
     private final LetterRepository letterRepository;
     private final MemberRepository memberRepository;
+    private final SmsService smsService;
 
     @Override
     public List<LetterResponseDto> getAllLetters(int page, int limit) {
@@ -76,6 +78,8 @@ public class LetterServiceImpl implements LetterService {
                 .build();
 
         Letter updatedLetter = letterRepository.save(letter);
+
+        smsService.sendLetterMessage(member, receiver, thankLetterDto.getContent());
 
         return ThankLetterResponseDto.builder()
                 .letterId(updatedLetter.getId())
