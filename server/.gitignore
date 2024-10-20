@@ -44,3 +44,4 @@ application-h2.properties
 application-s3.properties
 application-rds.properties
 application-iamport.properties
+application-sms.properties
