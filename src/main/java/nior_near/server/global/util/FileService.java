@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public interface FileService {
 
-    Object upload(MultipartFile multipartFile, String directoryName) throws IOException;
+    Object upload(MultipartFile multipartFile, String directoryName);
 
-    void remove(String path) throws IOException;
+    void remove(String path);
 }

@@ -15,5 +15,7 @@ public interface StoreCommandService {
 
     BaseResponseDto<ChefRegistrationResponseDto> registerFreelanceChef(String memberName, FreelanceChefRegistrationRequestDto freelanceChefRegistrationRequestDto) throws IOException;
 
+    BaseResponseDto<String> deleteStore(String memberName) throws IOException;
+
     BaseResponseDto<MenuAddResponseDto> addMenu(Long storeId, String memberName, MenuAddRequestDto menuAddRequestDto) throws IOException;
 }

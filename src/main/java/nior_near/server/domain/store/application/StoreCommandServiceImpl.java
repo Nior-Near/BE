@@ -18,6 +18,7 @@ import nior_near.server.global.common.AwsS3;
 import nior_near.server.global.common.BaseResponseDto;
 import nior_near.server.global.common.ResponseCode;
 import nior_near.server.global.util.FileService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,10 +43,12 @@ public class StoreCommandServiceImpl implements StoreCommandService {
     private final MemberRepository memberRepository;
     private final MenuRepository menuRepository;
     private final StoreImageRepository storeImageRepository;
+    @Value("${cloud.s3.url}")
+    private String path;
 
     @Override
     @Transactional
-    public BaseResponseDto<ChefRegistrationResponseDto> registerCompanyChef(String memberName, CompanyChefRegistrationRequestDto companyChefRegistrationRequestDto) throws IOException {
+    public BaseResponseDto<ChefRegistrationResponseDto> registerCompanyChef(String memberName, CompanyChefRegistrationRequestDto companyChefRegistrationRequestDto) {
 
         Member member = memberRepository.findByName(memberName).orElseThrow(() -> new StoreHandler(ResponseCode.MEMBER_NOT_FOUND));
 
@@ -88,7 +91,7 @@ public class StoreCommandServiceImpl implements StoreCommandService {
 
     @Override
     @Transactional
-    public BaseResponseDto<ChefRegistrationResponseDto> registerFreelanceChef(String memberName, FreelanceChefRegistrationRequestDto freelanceChefRegistrationRequestDto) throws IOException {
+    public BaseResponseDto<ChefRegistrationResponseDto> registerFreelanceChef(String memberName, FreelanceChefRegistrationRequestDto freelanceChefRegistrationRequestDto) {
 
         Member member = memberRepository.findByName(memberName).orElseThrow(() -> new StoreHandler(ResponseCode.MEMBER_NOT_FOUND));
 
@@ -137,7 +140,23 @@ public class StoreCommandServiceImpl implements StoreCommandService {
 
     @Override
     @Transactional
-    public BaseResponseDto<MenuAddResponseDto> addMenu(Long storeId, String memberName, MenuAddRequestDto menuAddRequestDto) throws IOException {
+    public BaseResponseDto<String> deleteStore(String memberName) {
+
+        Member member = memberRepository.findByName(memberName).orElseThrow(() -> new StoreHandler(ResponseCode.MEMBER_NOT_FOUND));
+
+        Store store = storeRepository.findByMember(member).orElseThrow(() -> new StoreHandler(ResponseCode.STORE_NOT_FOUND));
+
+        fileService.remove(store.getLetter().replaceAll(path, ""));
+
+        storeRepository.delete(store);
+
+        return BaseResponseDto.onSuccess(member.getNickname() + "님의 상점이 삭제되었습니다.", ResponseCode.OK);
+
+    }
+
+    @Override
+    @Transactional
+    public BaseResponseDto<MenuAddResponseDto> addMenu(Long storeId, String memberName, MenuAddRequestDto menuAddRequestDto) {
 
         Member member = memberRepository.findByName(memberName).orElseThrow(() -> new StoreHandler(ResponseCode.MEMBER_NOT_FOUND));
         Store store = storeRepository.findById(storeId).orElseThrow(() -> new StoreHandler(ResponseCode.STORE_NOT_FOUND));
@@ -179,7 +198,7 @@ public class StoreCommandServiceImpl implements StoreCommandService {
         return storeAuthList;
     }
 
-    private String getS3ImageLink(MultipartFile multipartFile, String dirName) throws IOException {
+    private String getS3ImageLink(MultipartFile multipartFile, String dirName) {
 
         AwsS3 storeImage = (AwsS3) fileService.upload(multipartFile, dirName);
 

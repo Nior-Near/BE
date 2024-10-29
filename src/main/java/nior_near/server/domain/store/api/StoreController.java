@@ -66,5 +66,10 @@ public class StoreController {
 
     }
 
+    @DeleteMapping("/testDelete")
+    public BaseResponseDto<String> deleteTestStore(@AuthenticationPrincipal UserDetails userDetails) throws IOException {
+        return storeCommandService.deleteStore(userDetails.getUsername());
+    }
+
 
 }

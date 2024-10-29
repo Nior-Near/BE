@@ -3,6 +3,7 @@ package nior_near.server.global.util;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +22,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class AwsS3Service implements FileService {
 
     private final AmazonS3 amazonS3;
@@ -30,27 +31,32 @@ public class AwsS3Service implements FileService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public AwsS3 upload(MultipartFile multipartFile, String directoryName) throws IOException {
-        File file = convertMultipartFileToFile(multipartFile)
-                .orElseThrow(() -> new AwsS3Handler(ResponseCode.S3_UPLOAD_FAIL));
+    public AwsS3 upload(MultipartFile multipartFile, String directoryName) {
 
-        return upload(file, directoryName);
-    }
+        // 확장자 가져오기
+        String originalFilename = multipartFile.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
 
-    public void remove(String path) {
-//        AwsS3 awsS3 = (AwsS3)object;
+        String fileName = UUID.randomUUID() + extension;
+        String key = directoryName + "/" + fileName;
+        log.info("upload key : {}", key);
 
-        if (!amazonS3.doesObjectExist(bucket, path)) {
-            throw new AmazonS3Exception("Object " + path + " does not exist!");
+        // 메타 데이터 설정
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(multipartFile.getSize());
+        metadata.setContentType(multipartFile.getContentType());
+
+        try {
+            // 파일 업로드
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, key, multipartFile.getInputStream(), metadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead); // Public Read 권한 설정
+            amazonS3.putObject(putObjectRequest);
+        } catch (IOException e) {
+            throw new AwsS3Handler(ResponseCode.S3_UPLOAD_FAIL);
         }
-        amazonS3.deleteObject(bucket, path);
-    }
 
-    private AwsS3 upload(File file, String directoryName) {
-        String key = randomFileName(file, directoryName);
-        String path = putS3(file, key);
-
-        removeFile(file);
+        String path = amazonS3.getUrl(bucket, key).toString();
+        log.info("upload path : {}", path);
 
         return AwsS3
                 .builder()
@@ -59,43 +65,14 @@ public class AwsS3Service implements FileService {
                 .build();
     }
 
-    private String randomFileName(File file, String directoryName) {
-        return directoryName + "/" + UUID.randomUUID() + file.getName();
-    }
+    public void remove(String path) {
 
-    private String putS3(File uploadFile, String fileName) {
-        amazonS3.putObject(new PutObjectRequest(bucket, fileName, uploadFile)
-                .withCannedAcl(CannedAccessControlList.PublicRead));
-        return getS3(bucket, fileName);
-    }
-
-    private String getS3(String bucket, String fileName) {
-        log.info(amazonS3.getUrl(bucket, fileName).toString());
-        return amazonS3.getUrl(bucket, fileName).toString();
-    }
-
-    private void removeFile(File file) {
-        file.delete();
-    }
-
-    private Optional<File> convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
-
-        File file = new File(System.getProperty("user.dir") + "/" + multipartFile.getOriginalFilename());
-
-        // 이미 파일이 있을 시에, 성공적인 파일 생성을 위해 삭제
-        if(file.exists()) {
-            FileSystemUtils.deleteRecursively(file);
+        if (!amazonS3.doesObjectExist(bucket, path)) {
+            log.error("{} 이 존재하지 않습니다.", path);
+            throw new AwsS3Handler(ResponseCode.S3_PATH_NOT_FOUND);
         }
+        amazonS3.deleteObject(bucket, path);
 
-        if(file.createNewFile()) {
-            try(FileOutputStream fos = new FileOutputStream(file)) {
-                fos.write(multipartFile.getBytes());
-            }
-            return Optional.of(file);
-        }
-
-        return Optional.empty();
     }
-
 
 }
