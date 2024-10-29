@@ -40,6 +40,7 @@ public enum ResponseCode {
 
     // AWS S3 Error
     S3_UPLOAD_FAIL(HttpStatus.BAD_REQUEST, "S34001", "파일 업로드에 실패했습니다."),
+    S3_DELETE_FAIL(HttpStatus.BAD_REQUEST, "S34002", "파일 삭제에 실패했습니다."),
 
     // Store Error
     STORE_UNAUTHORIZED(HttpStatus.BAD_REQUEST, "STORE4001", "해당 STORE 에 접근할 권한이 없습니다."),

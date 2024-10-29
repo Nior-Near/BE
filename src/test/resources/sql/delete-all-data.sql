@@ -1,0 +1,6 @@
+DELETE FROM store_auth;
+DELETE FROM store;
+-- DELETE FROM member;
+-- DELETE FROM auth;
+-- DELETE FROM place;
+-- DELETE FROM region;

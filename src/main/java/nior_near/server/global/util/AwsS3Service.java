@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import nior_near.server.global.common.AwsS3;
 import nior_near.server.global.common.ResponseCode;
 import nior_near.server.global.error.handler.AwsS3Handler;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AwsS3Service implements FileService {
 
     private final AmazonS3 amazonS3;
@@ -35,13 +37,13 @@ public class AwsS3Service implements FileService {
         return upload(file, directoryName);
     }
 
-    public void remove(Object object) {
-        AwsS3 awsS3 = (AwsS3)object;
+    public void remove(String path) {
+//        AwsS3 awsS3 = (AwsS3)object;
 
-        if (!amazonS3.doesObjectExist(bucket, awsS3.getKey())) {
-            throw new AmazonS3Exception("Object " + awsS3.getKey() + " does not exist!");
+        if (!amazonS3.doesObjectExist(bucket, path)) {
+            throw new AmazonS3Exception("Object " + path + " does not exist!");
         }
-        amazonS3.deleteObject(bucket, awsS3.getKey());
+        amazonS3.deleteObject(bucket, path);
     }
 
     private AwsS3 upload(File file, String directoryName) {
@@ -68,6 +70,7 @@ public class AwsS3Service implements FileService {
     }
 
     private String getS3(String bucket, String fileName) {
+        log.info(amazonS3.getUrl(bucket, fileName).toString());
         return amazonS3.getUrl(bucket, fileName).toString();
     }
 

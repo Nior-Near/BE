@@ -52,8 +52,8 @@ public class StoreCommandServiceImpl implements StoreCommandService {
         List<Auth> authList = new ArrayList<>();
 
         // 1. store 저장
-        Region region = regionRepository.findById(companyChefRegistrationRequestDto.getRegionId()).orElseThrow(() -> new StoreHandler(ResponseCode.STORE_NOT_FOUND));
         Place place = placeRepository.findById(companyChefRegistrationRequestDto.getPlaceId()).orElseThrow(() -> new StoreHandler(ResponseCode.PLACE_NOT_FOUND));
+        Region region = regionRepository.findById(place.getRegion().getId()).orElseThrow(() -> new StoreHandler(ResponseCode.REGION_NOT_FOUND));
 
         Store store = storeRepository.save(
                 Store.builder()
@@ -102,8 +102,6 @@ public class StoreCommandServiceImpl implements StoreCommandService {
                 .name(freelanceChefRegistrationRequestDto.getPlaceName())
                 .region(region)
                 .build());
-
-
 
         // 1. store 저장
         Store store = storeRepository.save(
