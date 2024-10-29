@@ -49,6 +49,7 @@ public enum ResponseCode {
     ALREADY_HEART_EXCEPTION(HttpStatus.BAD_REQUEST, "STORE4004", "이미 관심 상점으로 등록되었습니다."),
     NOT_HEART_EXCEPTION(HttpStatus.BAD_REQUEST, "STORE4005", "해당 상점은 관심 상점으로 등록되지 않았으므로 삭제할 수 없습니다."),
     PAGE_AND_SIZE_NOT_CORRECT(HttpStatus.BAD_REQUEST, "STORE4006", "page 와 size 는 0 과 양수만 입력 가능합니다."),
+    STORE_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "STORE4007", "이미 해당 계정의 요리사가 존재합니다."),
 
     // Order Error
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "STORE4001", "존재하지 않는 주문입니다."),

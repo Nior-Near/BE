@@ -15,7 +15,6 @@ public class MenuAddRequestDto {
     @NotNull(message = "메뉴의 1인분 g(그램)을 입력해주세요.")
     private Integer menuOneServing;
     @NotBlank(message = "메뉴 설명을 입력해주세요.")
-    @Max(value = 30, message = "메뉴 설명은 30자 이내로 입력해주세요.")
     private String menuIntroduction;
     @NotNull(message = "메뉴 사진을 업로드 해주세요.")
     private MultipartFile menuImage;

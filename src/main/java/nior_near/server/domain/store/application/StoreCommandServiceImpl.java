@@ -52,6 +52,11 @@ public class StoreCommandServiceImpl implements StoreCommandService {
 
         Member member = memberRepository.findByName(memberName).orElseThrow(() -> new StoreHandler(ResponseCode.MEMBER_NOT_FOUND));
 
+        // 이미 존재하는 요리사인 경우 오류 메시지 반환
+        if (storeRepository.findByMember(member).isPresent()) {
+            throw new StoreHandler(ResponseCode.STORE_ALREADY_EXIST);
+        }
+
         List<Auth> authList = new ArrayList<>();
 
         // 1. store 저장
@@ -94,6 +99,11 @@ public class StoreCommandServiceImpl implements StoreCommandService {
     public BaseResponseDto<ChefRegistrationResponseDto> registerFreelanceChef(String memberName, FreelanceChefRegistrationRequestDto freelanceChefRegistrationRequestDto) {
 
         Member member = memberRepository.findByName(memberName).orElseThrow(() -> new StoreHandler(ResponseCode.MEMBER_NOT_FOUND));
+
+        // 이미 존재하는 요리사인 경우 오류 메시지 반환
+        if (storeRepository.findByMember(member).isPresent()) {
+            throw new StoreHandler(ResponseCode.STORE_ALREADY_EXIST);
+        }
 
         List<Auth> authList = new ArrayList<>();
 
