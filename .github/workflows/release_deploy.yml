@@ -23,11 +23,11 @@ jobs:
       - name: bastion-host 에서 build 및 테스트 후 deploy.zip 로 압축한다.
         uses: appleboy/ssh-action@v1.0.3
         env:
-          APPLICATION_PROPERTIES_S3: ${{ secrets.APPLICATION_PROPERTIES_S3_RELEASE }}
-          APPLICATION_PROPERTIES_iamport: ${{ secrets.APPLICATION_PROPERTIES_IMPORT_RELEASE }}
-          APPLICATION_PROPERTIES_oauth: ${{ secrets.APPLICATION_PROPERTIES_OAUTH_RELEASE }}
+          APPLICATION_PROPERTIES_S3: ${{ secrets.APPLICATION_PROPERTIES_S3 }}
+          APPLICATION_PROPERTIES_iamport: ${{ secrets.APPLICATION_PROPERTIES_IMPORT }}
+          APPLICATION_PROPERTIES_oauth: ${{ secrets.APPLICATION_PROPERTIES_OAUTH }}
           APPLICATION_PROPERTIES_rds: ${{ secrets.APPLICATION_PROPERTIES_RDS_RELEASE }}
-          APPLICATION_PROPERTIES_sms: ${{ secrets.APPLICATION_PROPERTIES_SMS_RELEASE }}
+          APPLICATION_PROPERTIES_sms: ${{ secrets.APPLICATION_PROPERTIES_SMS }}
           APPLICATION_PROPERTIES_ssl: ${{ secrets.APPLICATION_PROPERTIES_SSL_RELEASE }}
         with:
           host: ${{ secrets.EC2_RELEASE_BASTION_HOST }}
@@ -79,8 +79,8 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACTION_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_ACTION_SECRET_ACCESS_KEY }}
-          application_name: niornear-release # Beanstalk 에서 설정한 이름으로
-          environment_name: Niornear-release-env # Beanstalk 에서 설정한 이름으로
+          application_name: niorenar-release # Beanstalk 에서 설정한 이름으로
+          environment_name: Niorenar-release-env # Beanstalk 에서 설정한 이름으로
           version_label: github-action-${{ steps.current-time.outputs.formattedTime }}
           region: ap-northeast-2
           deployment_package: ./deploy.zip
