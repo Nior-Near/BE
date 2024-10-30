@@ -65,16 +65,26 @@ jobs:
             cp -r .platform /home/ubuntu/deploy/.platform
             cd /home/ubuntu/deploy && zip -r deploy.zip .
 
-      - name: bastion-host 에서 deploy.zip 를 다운받아온다.
-        env:
-          EC2_RELEASE_BASTION_HOST: ${{secrets.EC2_RELEASE_BASTION_HOST}}
-          EC2_RELEASE_BASTION_PRIVATE_KEY: ${{secrets.EC2_RELEASE_BASTION_PRIVATE_KEY}}
+#      - name: bastion-host 에서 deploy.zip 를 다운받아온다.
+#        env:
+#          EC2_RELEASE_BASTION_HOST: ${{secrets.EC2_RELEASE_BASTION_HOST}}
+#          EC2_RELEASE_BASTION_PRIVATE_KEY: ${{secrets.EC2_RELEASE_BASTION_PRIVATE_KEY}}
+#
+#        run: |
+#          echo "$EC2_RELEASE_BASTION_PRIVATE_KEY" > ./niornear-server.pem
+#          chmod 600 ./niornear-server.pem
+#          sudo scp -i ./niornear-server.pem ubuntu@$EC2_RELEASE_BASTION_HOST:/home/ubuntu/deploy/deploy.zip ./
+#          echo "yes"
 
-        run: |
-          echo "$EC2_RELEASE_BASTION_PRIVATE_KEY" > ./niornear-server.pem
-          chmod 600 ./niornear-server.pem
-          sudo scp -i ./niornear-server.pem ubuntu@$EC2_RELEASE_BASTION_HOST:/home/ubuntu/deploy/deploy.zip ./
-          echo "yes"
+      - name: bastion-host 에서 deploy.zip 를 다운받아온다.
+        uses: appleboy/scp-action@master
+        env:
+          HOST: ${{ secrets.EC2_RELEASE_BASTION_HOST }}
+          USERNAME: ${{ secrets.EC2_USERNAME }}
+          KEY: ${{ secrets.EC2_RELEASE_BASTION_PRIVATE_KEY }}
+        with:
+          source: "/home/ubuntu/deploy/deploy.zip"
+          target: "./"
 
       - name: Get current time
         uses: 1466587594/get-current-time@v2
