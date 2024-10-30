@@ -72,6 +72,7 @@ jobs:
 
         run: |
           echo "$EC2_RELEASE_BASTION_PRIVATE_KEY" > ./niornear-server.pem
+          chmod 600 ./niornear-server.pem
           sudo scp -i ./niornear-server.pem ubuntu@$EC2_RELEASE_BASTION_HOST:/home/ubuntu/deploy/deploy.zip ./
           echo "yes"
 
