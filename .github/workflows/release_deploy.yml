@@ -60,9 +60,9 @@ jobs:
             
             cd /home/ubuntu/BE
             cp ./build/libs/*SNAPSHOT.jar /home/ubuntu/deploy/application.jar
-            cp Procfile deploy/Procfile
-            cp -r .ebextensions_dev deploy/.ebextensions
-            cp -r .platform deploy/.platform
+            cp ./Procfile deploy/Procfile
+            cp -r .ebextensions_release /home/ubuntu/deploy/.ebextensions
+            cp -r .platform /home/ubuntu/deploy/.platform
             cd deploy && zip -r deploy.zip .
 
       - name: bastion-host 에서 deploy.zip 를 다운받아온다.
