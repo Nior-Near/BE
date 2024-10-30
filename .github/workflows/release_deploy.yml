@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && github.event.pull_request_base.ref == 'release'
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'release'
 
     steps:
       - name: checkout
