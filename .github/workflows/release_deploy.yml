@@ -71,8 +71,9 @@ jobs:
           EC2_RELEASE_BASTION_PRIVATE_KEY: ${{secrets.EC2_RELEASE_BASTION_PRIVATE_KEY}}
 
         run: |
-          echo "$EC2_RELEASE_BASTION_PRIVATE_KEY" > ./niornear-release-bastion.pem
-          sudo scp -i ./niornear-release-bastion.pem ubuntu@$EC2_RELEASE_BASTION_HOST:/home/ubuntu/deploy/deploy.zip ./
+          echo "$EC2_RELEASE_BASTION_PRIVATE_KEY" > ./niornear-server.pem
+          sudo scp -i ./niornear-server.pem ubuntu@$EC2_RELEASE_BASTION_HOST:/home/ubuntu/deploy/deploy.zip ./
+          echo "yes"
 
       - name: Get current time
         uses: 1466587594/get-current-time@v2
