@@ -1,0 +1,98 @@
+name: niornear release CI/CD
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.event.pull_request_base.ref == 'release'
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: set up jdk 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'adopt'
+
+      - name: bastion-host 에서 build 및 테스트 후 deploy.zip 로 압축한다.
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          APPLICATION_PROPERTIES_S3: ${{ secrets.APPLICATION_PROPERTIES_S3 }}
+          APPLICATION_PROPERTIES_iamport: ${{ secrets.APPLICATION_PROPERTIES_IMPORT }}
+          APPLICATION_PROPERTIES_oauth: ${{ secrets.APPLICATION_PROPERTIES_OAUTH }}
+          APPLICATION_PROPERTIES_rds: ${{ secrets.APPLICATION_PROPERTIES_RDS_RELEASE }}
+          APPLICATION_PROPERTIES_sms: ${{ secrets.APPLICATION_PROPERTIES_SMS }}
+          APPLICATION_PROPERTIES_ssl: ${{ secrets.APPLICATION_PROPERTIES_SSL_RELEASE }}
+        with:
+          host: ${{ secrets.EC2_RELEASE_BASTION_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_RELEASE_BASTION_PRIVATE_KEY }}
+          envs: |
+            APPLICATION_PROPERTIES_S3
+            APPLICATION_PROPERTIES_iamport
+            APPLICATION_PROPERTIES_oauth
+            APPLICATION_PROPERTIES_rds
+            APPLICATION_PROPERTIES_sms
+            APPLICATION_PROPERTIES_ssl
+          script_stop: true
+          script: |
+            cd /home/ubuntu/BE
+            git pull origin main
+            
+            echo "$APPLICATION_PROPERTIES_S3" > ./src/main/resources/application-s3.properties
+            echo "$APPLICATION_PROPERTIES_iamport" > ./src/main/resources/application-iamport.properties
+            echo "$APPLICATION_PROPERTIES_oauth" > ./src/main/resources/application-oauth.properties
+            echo "$APPLICATION_PROPERTIES_rds" > ./src/main/resources/application-rds.properties
+            echo "$APPLICATION_PROPERTIES_sms" > ./src/main/resources/application-sms.properties
+            echo "$APPLICATION_PROPERTIES_ssl" > ./src/main/resources/application-ssl.properties
+            
+            chmod +x ./gradlew
+            ./gradlew clean build -x test
+            
+            cd /home/ubuntu
+            mkdir -p deploy
+            
+            cd /home/ubuntu/BE
+            cp ./build/libs/*SNAPSHOT.jar /home/ubuntu/deploy/application.jar
+            cp Procfile deploy/Procfile
+            cp -r .ebextensions_dev deploy/.ebextensions
+            cp -r .platform deploy/.platform
+            cd deploy && zip -r deploy.zip .
+
+      - name: bastion-host 에서 deploy.zip 를 다운받아온다.
+        env:
+          EC2_RELEASE_BASTION_HOST: ${{secrets.EC2_RELEASE_BASTION_HOST}}
+          EC2_RELEASE_BASTION_PRIVATE_KEY: ${{secrets.EC2_RELEASE_BASTION_PRIVATE_KEY}}
+
+        run: |
+          echo "$EC2_RELEASE_BASTION_PRIVATE_KEY" > ./niornear-release-bastion.pem
+          sudo scp -i ./niornear-release-bastion.pem ubuntu@$EC2_RELEASE_BASTION_HOST:/home/ubuntu/deploy/deploy.zip ./
+
+      - name: Get current time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH-mm-ss
+          utcOffset: "+09:00" # (8).build 시점의 시간확보
+
+      - name: Show Current Time
+        run: echo "CurrentTime=$"
+        shell: bash # (9).확보한 시간 보여주기
+
+      - name: Beanstalk Deploy
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key: ${{ secrets.AWS_ACTION_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_ACTION_SECRET_ACCESS_KEY }}
+          application_name: niorenar-release # Beanstalk 에서 설정한 이름으로
+          environment_name: Niorenar-release-env # Beanstalk 에서 설정한 이름으로
+          version_label: github-action-${{ steps.current-time.outputs.formattedTime }}
+          region: ap-northeast-2
+          deployment_package: ./deploy.zip
+          wait_for_deployment: false
