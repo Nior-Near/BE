@@ -63,7 +63,7 @@ jobs:
             cp Procfile /home/ubuntu/deploy/Procfile
             cp -r .ebextensions_release /home/ubuntu/deploy/.ebextensions
             cp -r .platform /home/ubuntu/deploy/.platform
-            cd deploy && zip -r deploy.zip .
+            cd /home/ubuntu/deploy && zip -r deploy.zip .
 
       - name: bastion-host 에서 deploy.zip 를 다운받아온다.
         env:
