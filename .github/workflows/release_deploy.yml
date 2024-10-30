@@ -74,9 +74,8 @@ jobs:
           echo "$EC2_RELEASE_BASTION_PRIVATE_KEY" > ./niornear-server.pem
           ls
           
-          echo $EC2_RELEASE_BASTION_HOST
           chmod 600 ./niornear-server.pem
-          sudo scp -i ./niornear-server.pem ubuntu@$EC2_RELEASE_BASTION_HOST:/home/ubuntu/deploy/deploy.zip ./
+          sudo scp -o StrictHostKeyChecking=no -i ./niornear-server.pem ubuntu@$EC2_RELEASE_BASTION_HOST:/home/ubuntu/deploy/deploy.zip ./
           echo "yes"
 
 #      - name: bastion-host 에서 deploy.zip 를 다운받아온다.
