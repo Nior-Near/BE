@@ -72,7 +72,7 @@ jobs:
 
         run: |
           echo "$EC2_RELEASE_BASTION_PRIVATE_KEY" > ./niornear-server.pem
-          echo "ls"
+          ls
           
           echo $EC2_RELEASE_BASTION_HOST
           chmod 600 ./niornear-server.pem
