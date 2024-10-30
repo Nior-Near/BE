@@ -43,7 +43,7 @@ jobs:
           script_stop: true
           script: |
             cd /home/ubuntu/BE
-            git pull origin main
+            git pull origin release
             
             echo "$APPLICATION_PROPERTIES_S3" > ./src/main/resources/application-s3.properties
             echo "$APPLICATION_PROPERTIES_iamport" > ./src/main/resources/application-iamport.properties
@@ -60,7 +60,7 @@ jobs:
             
             cd /home/ubuntu/BE
             cp ./build/libs/*SNAPSHOT.jar /home/ubuntu/deploy/application.jar
-            cp ./Procfile deploy/Procfile
+            cp Procfile /home/ubuntu/deploy/Procfile
             cp -r .ebextensions_release /home/ubuntu/deploy/.ebextensions
             cp -r .platform /home/ubuntu/deploy/.platform
             cd deploy && zip -r deploy.zip .
