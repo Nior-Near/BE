@@ -39,7 +39,7 @@ INSERT INTO region (id, upper_id, name) VALUES (31, null, '제주');
 -- INSERT INTO place (id, region_id, address, name) VALUES (7, 17, '경기도 고양시 일산동구 중앙로 202, 6층', '니어니어 7호점');
 -- INSERT INTO place (id, region_id, address, name) VALUES (8, 26, '부산광역시 해운대구 해운대해변로 404, 8층', '니어니어 8호점');
 
-INSERT INTO place (id, region_id, address, name) VALUES (default, 1, '서울특별시 강남구 논현로 123, 4층', '니어니어 1호점');
+INSERT INTO place (id, region_id, address, name) VALUES (default, 7, '서울여자대학교 바롬인성교육관 2층 구내식당', '니어니어 1호점');
 INSERT INTO place (id, region_id, address, name) VALUES (default, 1, '서울특별시 강남구 삼성로 789, 7층 702호', '니어니어 2호점');
 INSERT INTO place (id, region_id, address, name) VALUES (default, 1, '서울특별시 강남구 테헤란로 456, 10층', '니어니어 3호점');
 INSERT INTO place (id, region_id, address, name) VALUES (default, 2, '서울특별시 강동구 천호대로 456, 2층', '니어니어 4호점');
