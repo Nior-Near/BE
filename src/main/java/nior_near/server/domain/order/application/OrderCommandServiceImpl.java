@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,16 +49,25 @@ public class OrderCommandServiceImpl implements OrderCommandService {
     @Override
     @Transactional
     public BaseResponseDto<OrderAddResponseDto> addOrder(String memberName, OrderAddRequestDto orderAddRequestDto) {
+        log.info("addOrder 함수 시작");
 
+        log.info("memberRepository.findByName 실행");
         Member member = memberRepository.findByName(memberName).orElseThrow(() -> new OrderHandler(ResponseCode.MEMBER_NOT_FOUND));
+        log.info("storeRepository.findById 실행");
         Store store = storeRepository.findById(orderAddRequestDto.getStoreId()).orElseThrow(() -> new OrderHandler(ResponseCode.STORE_NOT_FOUND));
+        HashMap<Long, Menu> menus = getMenu(orderAddRequestDto.getMenus());
 
-        Long totalPrice = getTotalPrice(orderAddRequestDto.getMenus());
+        Long totalPrice = getTotalPrice(menus, orderAddRequestDto.getMenus());
 
-        /**
-         * TODO: totalPrice 와 결제할 멤버 정보를 매개변수로 가지는 결제 로직 추가될 것
-         */
+        log.info("paymentRepository.save 실행");
+        Payment payment = paymentRepository.save(
+                Payment.builder()
+                        .price(totalPrice)
+                        .paymentStatus(PaymentStatus.READY)
+                        .build()
+        );
 
+        log.info("orderRepository.save 실행");
         Order order = orderRepository.save(
                 Order.builder()
                         .member(member)
@@ -67,17 +77,20 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                         .requestMessage(orderAddRequestDto.getRequestMessage())
                         .totalPrice(totalPrice)
                         .orderUID(UUID.randomUUID().toString())
+                        .payment(payment)
                         .build()
         );
 
-        List<OrderMenu> orderMenuList = getOrderMenuList(orderAddRequestDto.getMenus(), order);
+        List<OrderMenu> orderMenuList = getOrderMenuList(menus, orderAddRequestDto.getMenus(), order);
+        log.info("orderMenuRepository.saveAll 실행");
         orderMenuRepository.saveAll(orderMenuList);
 
         // 주문 생성 후, 편지 보내기
+        log.info("store.getMember() 로 memberRepository.findById 발생");
         sendChefLetterToMember(store.getMember(), member, store.getLetter());
 
         // response 생성
-        List<OrderAddResponseDto.OrderMenuInfo> orderMenuInfoList = getOrderMenuInfoList(orderAddRequestDto.getMenus());
+        List<OrderAddResponseDto.OrderMenuInfo> orderMenuInfoList = getOrderMenuInfoList(menus, orderAddRequestDto.getMenus());
 
         OrderAddResponseDto orderAddResponseDto = OrderAddResponseDto.builder()
                 .orderId(order.getId())
@@ -87,55 +100,64 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .orderMenus(orderMenuInfoList)
                 .build();
 
-        Payment payment = paymentRepository.save(
-                Payment.builder()
-                        .price(totalPrice)
-                        .paymentStatus(PaymentStatus.READY)
-                        .build()
-        );
-
-        order.update(payment);
         smsService.sendMessage(order);
 
         return BaseResponseDto.onSuccess(orderAddResponseDto, ResponseCode.OK);
     }
 
-    private Long getTotalPrice(List<OrderAddRequestDto.OrderMenuItem> menus) {
+    private Long getTotalPrice(HashMap<Long, Menu> menus, List<OrderAddRequestDto.OrderMenuItem> orderMenuItems) {
         long totalPrice = 0;
 
-        for (OrderAddRequestDto.OrderMenuItem orderMenuItem : menus) {
-            Menu menu = menuRepository.findById(orderMenuItem.getMenuId()).orElseThrow(() -> new OrderHandler(ResponseCode.MENU_NOT_FOUND));
-            totalPrice += menu.getPrice() * orderMenuItem.getQuantity();
+        for (int i = 0; i<menus.size(); i++) {
+            totalPrice += menus.get(orderMenuItems.get(i).getMenuId()).getPrice() * orderMenuItems.get(i).getQuantity();
         }
 
         return totalPrice;
     }
 
-    private List<OrderMenu> getOrderMenuList(List<OrderAddRequestDto.OrderMenuItem> menus, Order order) {
+    private List<OrderMenu> getOrderMenuList(HashMap<Long, Menu> menus, List<OrderAddRequestDto.OrderMenuItem> orderMenuItems, Order order) {
         List<OrderMenu> orderMenuList = new ArrayList<>();
 
-        for (OrderAddRequestDto.OrderMenuItem orderMenuItem : menus) {
-            Menu menu = menuRepository.findById(orderMenuItem.getMenuId()).orElseThrow(() -> new OrderHandler(ResponseCode.MENU_NOT_FOUND));
-            orderMenuList.add(OrderMenu.builder().menu(menu).order(order).quantity(orderMenuItem.getQuantity()).build());
+        for (int i = 0; i<menus.size(); i++) {
+            orderMenuList.add(
+                    OrderMenu.builder()
+                            .menu(menus.get(orderMenuItems.get(i).getMenuId()))
+                            .order(order)
+                            .quantity(orderMenuItems.get(i).getQuantity())
+                            .build()
+            );
         }
 
         return orderMenuList;
     }
 
-    private List<OrderAddResponseDto.OrderMenuInfo> getOrderMenuInfoList(List<OrderAddRequestDto.OrderMenuItem> menus) {
+    private List<OrderAddResponseDto.OrderMenuInfo> getOrderMenuInfoList(HashMap<Long, Menu> menus, List<OrderAddRequestDto.OrderMenuItem> orderMenuItems) {
         List<OrderAddResponseDto.OrderMenuInfo> orderMenuInfoList = new ArrayList<>();
 
-        for (OrderAddRequestDto.OrderMenuItem orderMenuItem : menus) {
-            Menu menu = menuRepository.findById(orderMenuItem.getMenuId()).orElseThrow(() -> new OrderHandler(ResponseCode.MENU_NOT_FOUND));
+        for (int i = 0; i<menus.size(); i++) {
             orderMenuInfoList.add(
                     OrderAddResponseDto.OrderMenuInfo.builder()
-                    .menuName(menu.getName())
-                    .menuPrice(menu.getPrice())
-                    .quantity(orderMenuItem.getQuantity()).build()
+                    .menuName(menus.get(orderMenuItems.get(i).getMenuId()).getName())
+                    .menuPrice(menus.get(orderMenuItems.get(i).getMenuId()).getPrice())
+                    .quantity(orderMenuItems.get(i).getQuantity()).build()
             );
         }
 
         return orderMenuInfoList;
+    }
+
+    private HashMap<Long, Menu> getMenu(List<OrderAddRequestDto.OrderMenuItem> orderMenuItems) {
+        HashMap<Long, Menu> menus = new HashMap<>();
+
+        for(OrderAddRequestDto.OrderMenuItem orderMenuItem : orderMenuItems) {
+            log.info("menuRepository.findById 실행");
+            menus.put(
+                    orderMenuItem.getMenuId(),
+                    menuRepository.findById(orderMenuItem.getMenuId()).orElseThrow(() -> new OrderHandler(ResponseCode.MENU_NOT_FOUND))
+            );
+        }
+
+        return menus;
     }
 
     private void sendChefLetterToMember(Member sender, Member receiver, String letterImageLink) {
@@ -148,6 +170,7 @@ public class OrderCommandServiceImpl implements OrderCommandService {
                 .receiver(receiver)
                 .build();
 
+        log.info("letterRepository.save 실행");
         letterRepository.save(letter);
     }
 }

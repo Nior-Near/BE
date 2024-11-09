@@ -57,9 +57,6 @@ public class Member extends Time {
     @JoinColumn(name = "region_id")
     private Region region; // 사용자가 선택한 지역
 
-    @OneToOne(mappedBy = "member")
-    private Store store;
-
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Letter> senderLetterList = new ArrayList<>();
 
