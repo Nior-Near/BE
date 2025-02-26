@@ -1,6 +1,7 @@
 package nior_near.server.domain.user.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import nior_near.server.domain.letter.entity.Letter;
@@ -76,6 +77,7 @@ public class Member extends Time {
         this.userAuthorization = userAuthorization;
     }
 
+    @Builder
     public Member (String userId, String nickname, String profileImage, String email, String phone, String type) {
         this.name = userId;
         this.profileImage = profileImage;
