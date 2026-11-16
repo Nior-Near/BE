@@ -1,5 +1,5 @@
 ## 서비스 소개
-![image](https://github.com/user-attachments/assets/5129838c-7fde-44c0-b232-900efcd084a0)
+![니어니어 서비스 소개](docs/niornear_intro.jpg)
 
 ## 1. Stack Info
 
